@@ -3,6 +3,7 @@ import requests
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandStart, Text
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from bot.buttons.inline_buttons import language_buttons
 from bot.buttons.reply_buttons import main_menu_buttons, back_main_menu_button
@@ -58,34 +59,49 @@ async def phone_number_function(call: types.CallbackQuery, state: FSMContext):
         data['language'] = lang
     await call.message.delete()
     await state.set_state('phone_number')
+
+    # Telefon raqamni kiritish yoki yuborish uchun tugma yaratish
+    contact_button = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    contact_button.add(KeyboardButton(text="📞 Telefon raqamni yuborish", request_contact=True))
+
     if lang == "uz":
         await call.message.answer(
             text="""
-📞 Ro'yxatdan o'tish uchun telefon raqamingizni kiriting. 
+📞 Ro'yxatdan o'tish uchun telefon raqamingizni kiriting yoki tugma orqali yuboring.
 
-Raqamni +998********* shaklida yuboring."""
+Raqamni +998********* shaklida yuboring.""",
+            reply_markup=contact_button
         )
     elif lang == "en":
         await call.message.answer(
             text="""
-📞 To register, please enter your phone number.
+📞 To register, please enter your phone number or send it via the button.
 
-Send your number in the format +998*********."""
+Send your number in the format +998*********.""",
+            reply_markup=contact_button
         )
     else:
         await call.message.answer(
             text="""
-📞 Чтобы зарегистрироваться, введите свой номер телефона.
+📞 Чтобы зарегистрироваться, введите свой номер телефона или отправьте его через кнопку.
 
-Отправьте номер в формате +998*********.""")
+Отправьте номер в формате +998*********.""",
+            reply_markup=contact_button
+        )
 
 
-@dp.message_handler(state='phone_number')
-async def phone_number_function(msg: types.Message, state: FSMContext):
-    phone_number = msg.text
-    if not phone_number.startswith("+998") or len(phone_number) != 13:
-        await msg.answer("Iltimos, telefon raqamingizni to'g'ri formatda kiriting (+998*********).")
+@dp.message_handler(content_types=['text', 'contact'], state='phone_number')
+async def handle_phone_number(msg: types.Message, state: FSMContext):
+    phone_number = None
+    if msg.content_type == 'contact':
+        phone_number = msg.contact.phone_number
+    elif msg.text.startswith("+998") and len(msg.text) == 13 and msg.text[1:].isdigit():
+        phone_number = msg.text
+    else:
+        await msg.answer(
+            "Iltimos, telefon raqamingizni to'g'ri formatda kiriting (+998*********) yoki tugma orqali yuboring.")
         return
+
     user_data = await state.get_data()
     language = user_data.get('language', 'uz')
     for admin in admins:
@@ -107,10 +123,11 @@ Telefon raqam: {phone_number}""",
         "language": language
     }
     requests.post(url="http://127.0.0.1:8000/api/telegram-users/create/", json=data)
+
     if language == 'uz':
         await msg.answer("""
 Buyurtma berishni boshlash uchun 🛍 Buyurtma berish tugmasini bosing
- 
+
 Shuningdek, aksiyalarni ko'rishingiz va bizning filiallar bilan tanishishingiz mumkin""",
                          reply_markup=await main_menu_buttons(msg.from_user.id))
     elif language == 'en':

@@ -132,6 +132,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -160,3 +162,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR)
 LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "To'xtaniyoz Ota",
+    "site_header": "To'xtaniyoz Ota Admin",
+    "site_brand": "To'xtaniyoz Ota",
+    "site_logo": "resized_logo.jpg",
+    "welcome_sign": "Xush kelibsiz To'xtaniyoz Ota boshqaruv tizimiga!",
+    "copyright": "© To'xtaniyoz Ota",
+}
