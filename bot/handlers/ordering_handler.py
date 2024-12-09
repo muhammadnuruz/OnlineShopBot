@@ -14,7 +14,8 @@ from bot.buttons.inline_buttons import put_in_basket_buttons
 from bot.buttons.reply_buttons import location_buttons, shop_menu_buttons, category_menu_buttons, \
     put_in_basket_reply_buttons, main_menu_buttons, to_back_button
 from bot.buttons.text import ordering, ordering_ru, to_back, to_back_ru, basket, basket_ru
-from bot.dispatcher import dp
+from bot.dispatcher import dp, bot
+from main import admins
 
 
 @dp.message_handler(Text(equals=[ordering, ordering_ru]))
@@ -50,9 +51,10 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         await state.set_state('ordering_state')
         await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}",
                          reply_markup=await shop_menu_buttons(msg.from_user.id))
-    except Exception:
+    except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.message_handler(commands='to_back', state="*")
@@ -77,9 +79,10 @@ async def ordering_function_3(msg: types.Message, state: FSMContext):
         await state.finish()
         await state.set_state('ordering_state')
         await msg.answer(text=msg.text, reply_markup=await shop_menu_buttons(msg.from_user.id))
-    except Exception:
+    except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.message_handler(Text(equals=[basket, basket_ru]), state=['get_food', 'put_in_basket', 'ordering_state'])
@@ -118,7 +121,7 @@ async def ordering_function_9(msg: types.Message, state: FSMContext):
             await state.set_state('')
             await msg.answer(basket_text, reply_markup=await to_back_button(msg.from_user.id))
     except Exception as e:
-        print(e)
+        await bot.send_message(admins[0], text=e)
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
 
 
@@ -127,9 +130,10 @@ async def ordering_function_4(msg: types.Message, state: FSMContext):
     try:
         await state.set_state('get_food')
         await msg.answer(text=msg.text, reply_markup=await category_menu_buttons(msg.from_user.id, msg.text))
-    except Exception:
+    except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.message_handler(state='get_food')
@@ -161,9 +165,10 @@ Jami: {int(data['food']['price']) * int(data['count'])}"""
         await state.set_state('put_in_basket')
         await msg.answer(text=msg.text, reply_markup=await put_in_basket_reply_buttons(msg.from_user.id))
         await msg.answer_photo(photo=photo, caption=food_info, reply_markup=await put_in_basket_buttons())
-    except Exception:
+    except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.callback_query_handler(Text("add_in_basket"), state='put_in_basket')
@@ -191,10 +196,11 @@ Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
         await call.message.edit_caption(caption=food_info,
                                         reply_markup=await put_in_basket_buttons(data['count']))
-    except Exception:
+    except Exception as e:
         await call.message.delete()
         await state.finish()
         await call.message.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(call.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.callback_query_handler(Text("delete_in_basket"), state='put_in_basket')
@@ -225,10 +231,11 @@ Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
         await call.message.edit_caption(caption=food_info,
                                         reply_markup=await put_in_basket_buttons(data['count']))
-    except Exception:
+    except Exception as e:
         await call.message.delete()
         await state.finish()
         await call.message.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(call.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.callback_query_handler(Text("put_in_basket"), state='put_in_basket')
@@ -253,7 +260,8 @@ async def ordering_function_8(call: types.CallbackQuery, state: FSMContext):
         else:
             await call.message.answer(text="Добавлено в корзину ✅",
                                       reply_markup=await shop_menu_buttons(call.from_user.id))
-    except Exception:
+    except Exception as e:
         await call.message.delete()
         await state.finish()
         await call.message.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(call.from_user.id))
+        await bot.send_message(admins[0], text=e)
