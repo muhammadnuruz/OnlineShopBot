@@ -1,14 +1,9 @@
-import json
-
-import requests
 from aiogram import types
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
-from bot.buttons.reply_buttons import back_main_menu_button, main_menu_buttons
-from bot.buttons.text import contact, contact_ru, ask_question_ru, ask_question, contact_en, ask_question_en
+from bot.buttons.reply_buttons import back_main_menu_button
+from bot.buttons.text import contact, contact_ru, ask_question_ru, ask_question
 from bot.dispatcher import dp, bot
-from main import admins
 
 locations = {
     "Yunusobod filliali": (41.3653103, 69.291063),
@@ -29,74 +24,54 @@ phone_numbers = {
 }
 
 
-@dp.message_handler(Text(equals=[contact, contact_ru, contact_en]))
+@dp.message_handler(Text(equals=[contact, contact_ru]))
 async def contact_function(msg: types.Message):
     if msg.text == contact:
         await msg.answer(text="📞 Yagona telefon raqami: +998912787878")
-    elif msg.text == contact_en:
-        await msg.answer(text="📞 Single phone number: +998912787878")
     else:
         await msg.answer(text="📞 Единственный номер телефона: +998912787878")
 
 
-@dp.message_handler(Text(equals=[ask_question, ask_question_ru, ask_question_en]))
-async def ask_question_function(msg: types.Message, state: FSMContext):
-    await state.set_state('ask_question')
-
+@dp.message_handler(Text(equals=[ask_question, ask_question_ru]))
+async def ask_question_function(msg: types.Message):
     if msg.text == ask_question:
         await msg.answer(
-            text="✍️ Talab va istaklaringizni yozib qoldiring. Biz yechim topishga harakat qilamiz:",
-            reply_markup=await back_main_menu_button(msg.from_user.id)
-        )
-    elif msg.text == ask_question_en:
-        await msg.answer(
-            text="✍️ Write down your requests and suggestions. We will try to find a solution:",
-            reply_markup=await back_main_menu_button(msg.from_user.id)
-        )
+            text="To'lig' malumot link orqali 👇\n\nhttps://www.youtube.com/watch?v=GrJTF68jRck&t=147s ")
     else:
         await msg.answer(
-            text="✍️ Запишите ваши требования и пожелания. Мы постараемся найти решение:",
-            reply_markup=await back_main_menu_button(msg.from_user.id)
-        )
-
-
-@dp.message_handler(state='ask_question')
-async def receive_question_and_notify_admins(msg: types.Message, state: FSMContext):
-    tg_user = json.loads(
-        requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
-    )
-    user_language = tg_user.get('language', 'uz')
-    user_phone = tg_user.get('phone_number', 'Noma’lum')
-
-    user_info = (
-        f"👤 **Foydalanuvchi ma'lumotlari:**\n"
-        f"ID: <a href='tg://user?id={msg.from_user.id}'>{msg.from_user.id}</a>\n"
-        f"Username: @{msg.from_user.username}\n"
-        f"Ism-Familiya: {msg.from_user.full_name}\n"
-        f"📞 Telefon: {user_phone}\n"
-        f"✉️ Xabar: \n\n{msg.text}"
-    )
-
-    for admin in admins:
-        await bot.send_message(chat_id=admin, text=user_info, parse_mode='HTML')
-
-    if user_language == 'uz':
-        await msg.answer(
-            text="✅ Xabaringiz adminlarga jo'natildi! Rahmat.",
-            reply_markup=await main_menu_buttons(msg.from_user.id)
-        )
-    elif user_language == 'en':
-        await msg.answer(
-            text="✅ Your message has been sent to the admins! Thank you.",
-            reply_markup=await main_menu_buttons(msg.from_user.id)
-        )
-    else:
-        await msg.answer(
-            text="✅ Ваше сообщение отправлено администраторам! Спасибо.",
-            reply_markup=await main_menu_buttons(msg.from_user.id)
-        )
-
-    await state.finish()
+            text="Полная информация по ссылке 👇\n\nhttps://www.youtube.com/watch?v=GrJTF68jRck&t=147s ")
+# @dp.message_handler(state='ask_question')
+# async def receive_question_and_notify_admins(msg: types.Message, state: FSMContext):
+#     tg_user = json.loads(
+#         requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
+#     )
+#     user_language = tg_user.get('language', 'uz')
+#     user_phone = tg_user.get('phone_number', 'Noma’lum')
+#
+#     user_info = (
+#         f"👤 **Foydalanuvchi ma'lumotlari:**\n"
+#         f"ID: <a href='tg://user?id={msg.from_user.id}'>{msg.from_user.id}</a>\n"
+#         f"Username: @{msg.from_user.username}\n"
+#         f"Ism-Familiya: {msg.from_user.full_name}\n"
+#         f"📞 Telefon: {user_phone}\n"
+#         f"✉️ Xabar: \n\n{msg.text}"
+#     )
+#
+#     for admin in admins:
+#         await bot.send_message(chat_id=admin, text=user_info, parse_mode='HTML')
+#
+#     if user_language == 'uz':
+#         await msg.answer(
+#             text="✅ Xabaringiz adminlarga jo'natildi! Rahmat.",
+#             reply_markup=await main_menu_buttons(msg.from_user.id)
+#         )
+#     else:
+#         await msg.answer(
+#             text="✅ Ваше сообщение отправлено администраторам! Спасибо.",
+#             reply_markup=await main_menu_buttons(msg.from_user.id)
+#         )
+#
+#     await state.finish()
 
 # @dp.message_handler(Text(equals=[social_networks, social_networks_ru]))
 # async def sociable_networks_function(msg: types.Message):

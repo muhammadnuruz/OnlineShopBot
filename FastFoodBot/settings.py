@@ -82,6 +82,12 @@ TEMPLATES = [
     },
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'muhammadnurpdp@gmail.com'
+EMAIL_HOST_PASSWORD = 'nvdi brrh qzaa bnib'
 WSGI_APPLICATION = 'FastFoodBot.wsgi.application'
 
 # Database
@@ -119,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -133,7 +139,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -171,3 +176,8 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Xush kelibsiz To'xtaniyoz Ota boshqaruv tizimiga!",
     "copyright": "© To'xtaniyoz Ota",
 }
+
+LANGUAGES = [
+    ('en', 'English'),
+    ('ru', 'Русский'),
+]

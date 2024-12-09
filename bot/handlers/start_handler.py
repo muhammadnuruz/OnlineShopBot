@@ -1,4 +1,5 @@
 import json
+
 import requests
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -7,19 +8,19 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from bot.buttons.inline_buttons import language_buttons
 from bot.buttons.reply_buttons import main_menu_buttons, back_main_menu_button
-from bot.buttons.text import back_main_menu, choice_language, choice_language_ru, back_main_menu_ru, choice_language_en, \
-    change_phone, change_phone_ru, change_phone_en, back_main_menu_en
+from bot.buttons.text import back_main_menu, choice_language, choice_language_ru, back_main_menu_ru, change_phone, \
+    change_phone_ru
 from bot.dispatcher import dp, bot
 from main import admins
 
 
-@dp.message_handler(Text(equals=[back_main_menu, back_main_menu_ru, back_main_menu_en]), state='*')
+@dp.message_handler(Text(equals=[back_main_menu, back_main_menu_ru]), state='*')
 async def back_main_menu_function_1(msg: types.Message, state: FSMContext):
     await state.finish()
     await msg.answer(text=msg.text, reply_markup=await main_menu_buttons(msg.from_user.id))
 
 
-@dp.callback_query_handler(Text(equals=[back_main_menu, back_main_menu_ru, back_main_menu_en]), state='*')
+@dp.callback_query_handler(Text(equals=[back_main_menu, back_main_menu_ru]), state='*')
 async def back_main_menu_function_1(call: types.CallbackQuery, state: FSMContext):
     await state.finish()
     await call.message.delete()
@@ -38,16 +39,10 @@ Tilni tanlang
 
 -------------
 
-Выберите язык
-
--------------
-
-Select a language""", reply_markup=await language_buttons())
+Выберите язык""", reply_markup=await language_buttons())
     except KeyError:
         if tg_user.get('language') == 'uz':
             await msg.answer(text=f"Bot yangilandi ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
-        elif tg_user.get('language') == 'en':
-            await msg.answer(text=f"Bot has been updated ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
         else:
             await msg.answer(text=f"Бот обновлен ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
 
@@ -60,7 +55,6 @@ async def phone_number_function(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
     await state.set_state('phone_number')
 
-    # Telefon raqamni kiritish yoki yuborish uchun tugma yaratish
     contact_button = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     contact_button.add(KeyboardButton(text="📞 Telefon raqamni yuborish", request_contact=True))
 
@@ -70,14 +64,6 @@ async def phone_number_function(call: types.CallbackQuery, state: FSMContext):
 📞 Ro'yxatdan o'tish uchun telefon raqamingizni kiriting yoki tugma orqali yuboring.
 
 Raqamni +998********* shaklida yuboring.""",
-            reply_markup=contact_button
-        )
-    elif lang == "en":
-        await call.message.answer(
-            text="""
-📞 To register, please enter your phone number or send it via the button.
-
-Send your number in the format +998*********.""",
             reply_markup=contact_button
         )
     else:
@@ -130,12 +116,6 @@ Buyurtma berishni boshlash uchun 🛍 Buyurtma berish tugmasini bosing
 
 Shuningdek, aksiyalarni ko'rishingiz va bizning filiallar bilan tanishishingiz mumkin""",
                          reply_markup=await main_menu_buttons(msg.from_user.id))
-    elif language == 'en':
-        await msg.answer("""
-To start ordering, click the 🛍 Order button
-
-You can also view promotions and find out about our branches""",
-                         reply_markup=await main_menu_buttons(msg.from_user.id))
     else:
         await msg.answer("""
 Чтобы начать заказ, нажмите кнопку 🛍Заказать
@@ -145,18 +125,14 @@ You can also view promotions and find out about our branches""",
     await state.finish()
 
 
-@dp.message_handler(Text(equals=[choice_language, choice_language_ru, choice_language_en]))
+@dp.message_handler(Text(equals=[choice_language, choice_language_ru]))
 async def change_language_function_1(msg: types.Message):
     await msg.answer(text="""
 Tilni tanlang
 
 -------------
 
-Выберите язык
-
--------------
-
-Select a language""", reply_markup=await language_buttons())
+Выберите язык""", reply_markup=await language_buttons())
 
 
 @dp.callback_query_handler(Text(startswith='language_'))
@@ -173,14 +149,11 @@ async def language_function_1(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
     if call.data.split("_")[-1] == 'uz':
         await call.message.answer(text="Til o'zgartirildi 🇺🇿", reply_markup=await main_menu_buttons(call.from_user.id))
-    elif call.data.split("_")[-1] == 'en':
-        await call.message.answer(text="Language has been changed 🇬🇧",
-                                  reply_markup=await main_menu_buttons(call.from_user.id))
     else:
         await call.message.answer(text="Язык изменен 🇷🇺", reply_markup=await main_menu_buttons(call.from_user.id))
 
 
-@dp.message_handler(Text(equals=[change_phone, change_phone_ru, change_phone_en]))
+@dp.message_handler(Text(equals=[change_phone, change_phone_ru]))
 async def change_phone_number_handler(msg: types.Message, state: FSMContext):
     tg_user = json.loads(
         requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
@@ -189,8 +162,6 @@ async def change_phone_number_handler(msg: types.Message, state: FSMContext):
 
     if user_language == 'uz':
         text = "📞 Yangi telefon raqamingizni kiriting. Raqamni +998********* shaklida yuboring:"
-    elif user_language == 'en':
-        text = "📞 Please enter your new phone number. Send it in the format +998*********:"
     else:
         text = "📞 Введите новый номер телефона. Отправьте его в формате +998*********:"
 
@@ -210,8 +181,6 @@ async def save_new_phone_number(msg: types.Message, state: FSMContext):
 
         if user_language == 'uz':
             text = "❌ Telefon raqami noto'g'ri. Iltimos, raqamni +998********* shaklida yuboring."
-        elif user_language == 'en':
-            text = "❌ Invalid phone number. Please send the number in the format +998*********."
         else:
             text = "❌ Неверный номер телефона. Пожалуйста, отправьте его в формате +998*********."
 
@@ -228,8 +197,6 @@ async def save_new_phone_number(msg: types.Message, state: FSMContext):
 
     if user_language == 'uz':
         text = "✅ Telefon raqamingiz muvaffaqiyatli o'zgartirildi."
-    elif user_language == 'en':
-        text = "✅ Your phone number has been successfully updated."
     else:
         text = "✅ Ваш номер телефона успешно обновлен."
 

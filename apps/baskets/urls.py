@@ -6,7 +6,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path('<str:chat_id>/', BasketListViewSet.as_view(), name='basket_list'),
     path('create/', BasketCreateViewSet.as_view(), name='basket_create'),
+    path('<str:chat_id>/', BasketListViewSet.as_view(), name='basket_list'),
     path('delete/<int:pk>/', BasketDeleteViewSet.as_view(), name='basket_delete'),
 ]
