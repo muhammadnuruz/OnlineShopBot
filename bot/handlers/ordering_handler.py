@@ -148,7 +148,7 @@ async def ordering_function_5(msg: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['count'] = 1
             data['food'] = food
-        photo_path = os.path.join('static', food['image'][12:])
+        photo_path = os.path.join('static', food['image'].replace('/img/static/', '').lstrip('/'))
         if not os.path.exists(photo_path):
             raise FileNotFoundError(f"Fayl topilmadi: {photo_path}")
         photo = InputFile(photo_path)
