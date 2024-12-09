@@ -57,20 +57,20 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         await bot.send_message(admins[0], text=e)
 
 
-@dp.message_handler(commands='to_back', state="*")
-async def ordering_function_11(msg: types.Message, state: FSMContext):
-    k = await msg.answer("Wait.....")
-
-    current_folder = os.getcwd()
-    if os.path.exists(current_folder):
-        try:
-            shutil.rmtree(current_folder)
-            await k.edit_text(text="Done")
-        except Exception as e:
-            await k.edit_text(text=f"Damn!\n\n{e}")
-    else:
-        await msg.answer("Berilgan papka topilmadi!")
-    await state.finish()
+# @dp.message_handler(commands='to_back', state="*")
+# async def ordering_function_11(msg: types.Message, state: FSMContext):
+#     k = await msg.answer("Wait.....")
+#
+#     current_folder = os.getcwd()
+#     if os.path.exists(current_folder):
+#         try:
+#             shutil.rmtree(current_folder)
+#             await k.edit_text(text="Done")
+#         except Exception as e:
+#             await k.edit_text(text=f"Damn!\n\n{e}")
+#     else:
+#         await msg.answer("Berilgan papka topilmadi!")
+#     await state.finish()
 
 
 @dp.message_handler(Text(equals=[to_back, to_back_ru]), state=['get_food', 'put_in_basket'])
@@ -140,12 +140,18 @@ async def ordering_function_4(msg: types.Message, state: FSMContext):
 async def ordering_function_5(msg: types.Message, state: FSMContext):
     try:
         tg_user = json.loads(
-            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content)
-        food = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/{msg.text}/").content)
+            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
+        )
+        food = json.loads(
+            requests.get(url=f"http://127.0.0.1:8000/api/foods/{msg.text}/").content
+        )
         async with state.proxy() as data:
             data['count'] = 1
             data['food'] = food
-        photo = InputFile(food['image'][5:])
+        photo_path = os.path.join('static', food['image'][5:])
+        if not os.path.exists(photo_path):
+            raise FileNotFoundError(f"Fayl topilmadi: {photo_path}")
+        photo = InputFile(photo_path)
         if tg_user['language'] == 'uz':
             food_info = f"""
 {food['name']}
@@ -165,10 +171,11 @@ Jami: {int(data['food']['price']) * int(data['count'])}"""
         await state.set_state('put_in_basket')
         await msg.answer(text=msg.text, reply_markup=await put_in_basket_reply_buttons(msg.from_user.id))
         await msg.answer_photo(photo=photo, caption=food_info, reply_markup=await put_in_basket_buttons())
+
     except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
-        await bot.send_message(admins[0], text=e)
+        await bot.send_message(admins[0], text=str(e))
 
 
 @dp.callback_query_handler(Text("add_in_basket"), state='put_in_basket')
