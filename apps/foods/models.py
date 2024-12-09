@@ -1,5 +1,6 @@
 from django.db import models
-
+import os
+import uuid
 from apps.categories.models import Categories
 
 
@@ -13,6 +14,12 @@ class Foods(models.Model):
     price = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.image and not self.image.name.startswith("static/img/"):
+            ext = os.path.splitext(self.image.name)[-1]
+            self.image.name = f"{uuid.uuid4().hex}{ext}"
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Food"
