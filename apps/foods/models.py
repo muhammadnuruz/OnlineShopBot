@@ -5,7 +5,7 @@ from apps.categories.models import Categories
 
 
 class Foods(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Название (англ.)")
+    name = models.CharField(max_length=100, verbose_name="Название (узбс.)")
     ru_name = models.CharField(max_length=100, verbose_name="Название (рус.)")
     category = models.ForeignKey(
         Categories,
@@ -14,7 +14,7 @@ class Foods(models.Model):
         verbose_name="Категория"
     )
     image = models.FileField(upload_to='static/img/', verbose_name="Изображение")
-    description = models.TextField(verbose_name="Описание (англ.)")
+    description = models.TextField(verbose_name="Описание (узб.)")
     ru_description = models.TextField(verbose_name="Описание (рус.)")
     price = models.CharField(max_length=20, verbose_name="Цена")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
