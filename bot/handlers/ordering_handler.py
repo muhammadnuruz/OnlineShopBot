@@ -20,7 +20,10 @@ from main import admins
 
 @dp.message_handler(Text(equals=[ordering, ordering_ru]))
 async def ordering_function_1(msg: types.Message):
-    await msg.answer("Iltimos, lokatsiyangizni yuboring.", reply_markup=await location_buttons(msg.text))
+    if msg.text == ordering:
+        await msg.answer("Iltimos, lokatsiyangizni yuboring.", reply_markup=await location_buttons(msg.text))
+    else:
+        await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons(msg.text))
 
 
 @dp.message_handler(content_types=ContentType.LOCATION)
