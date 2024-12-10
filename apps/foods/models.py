@@ -5,7 +5,7 @@ from apps.categories.models import Categories
 
 
 class Foods(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Название (узбс.)")
+    name = models.CharField(max_length=100, verbose_name="Название (узб.)")
     ru_name = models.CharField(max_length=100, verbose_name="Название (рус.)")
     category = models.ForeignKey(
         Categories,
