@@ -5,7 +5,8 @@ from apps.categories.models import Categories
 
 class CategoriesAdmin(admin.ModelAdmin):
     list_display = ('sequence_number', 'name', 'created_at')
-    ordering = ('-created_at',)
+    ordering = ('sequence_number',)
+    list_editable = ('sequence_number',)
     list_filter = ('created_at',)
     search_fields = ('name',)
 
