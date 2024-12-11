@@ -6,6 +6,6 @@ from apps.categories.serializers import CategoriesSerializer
 
 
 class CategoriesListViewSet(ListAPIView):
-    queryset = Categories.objects.all()
+    queryset = Categories.objects.all().order_by('sequence_number')
     serializer_class = CategoriesSerializer
     permission_classes = [AllowAny]

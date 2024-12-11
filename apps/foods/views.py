@@ -10,7 +10,7 @@ from apps.foods.serializers import FoodsSerializer
 
 
 class FoodsListViewSet(ListAPIView):
-    queryset = Foods.objects.all()
+    queryset = Foods.objects.all().order_by('sequence_number')
     serializer_class = FoodsSerializer
     permission_classes = [AllowAny]
 
