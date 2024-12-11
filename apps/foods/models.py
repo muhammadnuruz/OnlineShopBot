@@ -7,7 +7,6 @@ from apps.categories.models import Categories
 class Foods(models.Model):
     sequence_number = models.PositiveIntegerField(
         verbose_name="Кетма-кетлик",
-        unique=True,
         null=True,
         blank=True
     )
