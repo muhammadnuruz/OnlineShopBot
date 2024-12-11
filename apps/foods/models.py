@@ -5,6 +5,12 @@ from apps.categories.models import Categories
 
 
 class Foods(models.Model):
+    sequence_number = models.PositiveIntegerField(
+        verbose_name="Кетма-кетлик",
+        unique=True,
+        null=True,
+        blank=True
+    )
     name = models.CharField(max_length=100, verbose_name="Название (узб.)")
     ru_name = models.CharField(max_length=100, verbose_name="Название (рус.)")
     category = models.ForeignKey(
