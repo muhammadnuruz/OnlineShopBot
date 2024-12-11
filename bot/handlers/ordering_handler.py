@@ -161,6 +161,8 @@ async def ordering_function_5(msg: types.Message, state: FSMContext):
 
 {food['description']}
 
+{food['weight']}
+
 Narxi: {food['price']} * 1
 Jami: {food['price']}"""
         else:
@@ -168,6 +170,8 @@ Jami: {food['price']}"""
 {food['ru_name']}
 
 {food['ru_description']}
+
+{food['weight']}
 
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
@@ -194,6 +198,8 @@ async def ordering_function_6(call: types.CallbackQuery, state: FSMContext):
 
 {data['food']['description']}
 
+{data['food']['weight']}
+
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
         else:
@@ -201,6 +207,9 @@ Jami: {int(data['food']['price']) * int(data['count'])}"""
 {data['food']['ru_name']}
 
 {data['food']['ru_description']}
+
+{data['food']['weight']}
+
 
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
@@ -229,6 +238,8 @@ async def ordering_function_7(call: types.CallbackQuery, state: FSMContext):
 
 {data['food']['description']}
 
+{data['food']['weight']}
+
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
         else:
@@ -236,6 +247,8 @@ Jami: {int(data['food']['price']) * int(data['count'])}"""
 {data['food']['ru_name']}
 
 {data['food']['ru_description']}
+
+{data['food']['weight']}
 
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
