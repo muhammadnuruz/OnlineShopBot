@@ -5,7 +5,8 @@ from apps.categories.models import Categories
 
 
 class Foods(models.Model):
-    sequence_number = models.PositiveIntegerField(
+    sequence_number = models.CharField(
+        max_length=5,
         verbose_name="Кетма-кетлик",
         null=True,
         blank=True
@@ -23,7 +24,7 @@ class Foods(models.Model):
     ru_description = models.TextField(verbose_name="Описание (рус.)")
     compound = models.TextField(verbose_name="Состав (узб.)")
     ru_compound = models.TextField(verbose_name="Состав (рус.)")
-    weight = models.IntegerField(verbose_name="Вес")
+    weight = models.CharField(max_length=20, verbose_name="Вес")
     article = models.IntegerField(verbose_name="Артикул")
     price = models.CharField(max_length=20, verbose_name="Цена")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")

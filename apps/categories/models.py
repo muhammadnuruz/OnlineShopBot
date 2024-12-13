@@ -2,7 +2,8 @@ from django.db import models
 
 
 class Categories(models.Model):
-    sequence_number = models.PositiveIntegerField(
+    sequence_number = models.CharField(
+        max_length=5,
         verbose_name="Кетма-кетлик",
         null=True,
         blank=True

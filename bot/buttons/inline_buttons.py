@@ -37,3 +37,16 @@ async def put_in_basket_buttons(count: str = '1'):
         [InlineKeyboardButton(text="📥", callback_data='put_in_basket')]
     ]
     return InlineKeyboardMarkup(inline_keyboard=design)
+
+
+async def to_back_button(chat_id: int):
+    tg_user = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{chat_id}/").content)
+    if tg_user['language'] == 'uz':
+        design = [
+            [to_back]
+        ]
+    else:
+        design = [
+            [to_back_ru]
+        ]
+    return ReplyKeyboardMarkup(keyboard=design, resize_keyboard=True)

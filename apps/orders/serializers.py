@@ -12,4 +12,4 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        exclude = ['ordered_at', 'delivered_at', 'created_at', 'updated_at']
+        exclude = ['created_at', 'updated_at']

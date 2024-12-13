@@ -1,17 +1,17 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+
 from .models import Order
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        'user', 'status', 'total_price', 'ordered_at', 'get_food_items_display',
-        'delivery_address', 'payment_status'
+        'user', 'status', 'total_price', 'get_food_items_display',
+        'delivery_address', "payment_confirmed"
     )
     readonly_fields = (
-        'ordered_at', 'delivered_at', 'payment_date', 'cancelled_at',
-        'confirmed_at', 'created_at', 'updated_at', 'get_food_items_display'
+        'created_at', 'updated_at', 'get_food_items_display'
     )
     fieldsets = (
         (None, {
@@ -21,21 +21,24 @@ class OrderAdmin(admin.ModelAdmin):
             )
         }),
         ('Payment Info', {
-            'fields': ('payment_method', 'payment_status', 'payment_date',
-                       'payment_confirmed'),
+            'fields': ('payment_confirmed',),
         }),
         ('Dates', {
-            'fields': ('ordered_at', 'delivered_at',
-                       'cancelled_at', 'confirmed_at', 'created_at', 'updated_at'),
+            'fields': ('created_at', 'updated_at'),
         }),
     )
 
-    @admin.display(description='Food Items')  # Ustun nomini belgilash
+    @admin.display(description='Продукты питания')
     def get_food_items_display(self, obj):
         if not obj.food_items:
             return "No food items"
-        items = [
-            f"<li>{item['name']} — {item['price']}</li>"
-            for item in obj.food_items
-        ]
-        return format_html("<ul>{}</ul>", "".join(items))
+
+        items = []
+        for item in obj.food_items:
+            food_name = item.get('food_name', 'No Name')
+            quantity = item.get('quantity', 0)
+            price = item.get('price', 0)
+
+            items.append(f"<li>{food_name} — {quantity} pcs — {price} UZS</li>")
+
+        return mark_safe(f"<ul>{''.join(items)}</ul>")
