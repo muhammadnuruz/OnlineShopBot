@@ -433,9 +433,8 @@ async def ordering_function_5(msg: types.Message, state: FSMContext):
         tg_user = json.loads(
             requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
         )
-        encoded_text = quote(msg.text)
         food = json.loads(
-            requests.get(url=f"http://127.0.0.1:8000/api/foods/{encoded_text}/").content
+            requests.get(url=f"http://127.0.0.1:8000/api/foods/{msg.text}/").content
         )
         async with state.proxy() as data:
             data['count'] = 1
