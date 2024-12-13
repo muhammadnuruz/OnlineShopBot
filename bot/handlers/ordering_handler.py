@@ -29,20 +29,20 @@ async def ordering_function_1(msg: types.Message):
         await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons(msg.text))
 
 
-# @dp.message_handler(commands='to_back', state="*")
-# async def ordering_function_11(msg: types.Message, state: FSMContext):
-#     k = await msg.answer("Wait.....")
-#
-#     current_folder = os.getcwd()
-#     if os.path.exists(current_folder):
-#         try:
-#             shutil.rmtree(current_folder)
-#             await k.edit_text(text="Done")
-#         except Exception as e:
-#             await k.edit_text(text=f"Damn!\n\n{e}")
-#     else:
-#         await msg.answer("Berilgan papka topilmadi!")
-#     await state.finish()
+@dp.message_handler(commands='to_back', state="*")
+async def ordering_function_11(msg: types.Message, state: FSMContext):
+    k = await msg.answer("Wait.....")
+
+    current_folder = os.getcwd()
+    if os.path.exists(current_folder):
+        try:
+            shutil.rmtree(current_folder)
+            await k.edit_text(text="Done")
+        except Exception as e:
+            await k.edit_text(text=f"Damn!\n\n{e}")
+    else:
+        await msg.answer("Berilgan papka topilmadi!")
+    await state.finish()
 
 
 @dp.message_handler(content_types=ContentType.LOCATION)
