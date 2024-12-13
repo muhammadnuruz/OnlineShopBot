@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 import os
 import uuid
@@ -33,7 +35,8 @@ class Foods(models.Model):
     def save(self, *args, **kwargs):
         if self.image and not self.image.name.startswith("static/img/"):
             ext = os.path.splitext(self.image.name)[-1]
-            self.image.name = f"{uuid.uuid4().hex}{ext}"
+            random_number = random.randint(0, 10000000000)  # 10 xonali tasodifiy son
+            self.image.name = f"{random_number}{ext}"
         super().save(*args, **kwargs)
 
     class Meta:
