@@ -18,8 +18,8 @@ class FoodsListViewSet(ListAPIView):
         category = self.request.query_params.get('category')
         if category:
             return Foods.objects.filter(
-                Q(category__name__icontains=category) |  # Case-insensitive partial match
-                Q(category__ru_name__icontains=category)  # Case-insensitive partial match
+                Q(category__name__icontains=category) |
+                Q(category__ru_name__icontains=category)
             )
         return Foods.objects.all()
 
