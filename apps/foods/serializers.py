@@ -9,4 +9,5 @@ class FoodsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation['name'] = instance.name.strip()
         return representation
