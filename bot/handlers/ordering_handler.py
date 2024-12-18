@@ -532,26 +532,18 @@ async def ordering_function_7(call: types.CallbackQuery, state: FSMContext):
             food_info = f"""
 {data['food']['name']}
 
-{data['food']['description']}
-
-{data['food']['compound']}
-
-{data['food']['weight']}
-
+Tarkib: {data['food']['compound']}
+Og'irlik: {data['food']['weight']}
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
         else:
             food_info = f"""
 {data['food']['ru_name']}
 
-{data['food']['ru_description']}
-
-{data['food']['ru_compound']}
-
-{data['food']['weight']}
-
-Narxi: {data['food']['price']} * {data['count']}
-Jami: {int(data['food']['price']) * int(data['count'])}"""
+Состав: {data['food']['ru_compound']}
+Вес, кг: {data['food']['weight']}
+Цена: {data['food']['price']} * {data['count']}
+Общий: {int(data['food']['price']) * int(data['count'])}"""
         await call.message.edit_caption(caption=food_info,
                                         reply_markup=await put_in_basket_buttons(data['count']))
     except Exception as e:
