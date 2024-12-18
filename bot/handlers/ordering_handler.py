@@ -445,28 +445,20 @@ async def ordering_function_5(msg: types.Message, state: FSMContext):
         photo = InputFile(photo_path)
         if tg_user['language'] == 'uz':
             food_info = f"""
-{food['name']}
+{data['food']['name']}
 
-{food['description']}
-
-{food['compound']}
-
-{food['weight']}
-
-Narxi: {food['price']} * 1
-Jami: {food['price']}"""
-        else:
-            food_info = f"""
-{food['ru_name']}
-
-{food['ru_description']}
-
-{food['ru_compound']}
-
-{food['weight']}
-
+Tarkib: {data['food']['compound']}
+Og'irlik: {data['food']['weight']}
 Narxi: {data['food']['price']} * {data['count']}
 Jami: {int(data['food']['price']) * int(data['count'])}"""
+        else:
+            food_info = f"""
+{data['food']['ru_name']}
+
+Состав: {data['food']['ru_compound']}
+Вес, кг: {data['food']['weight']}
+Цена: {data['food']['price']} * {data['count']}
+Общий: {int(data['food']['price']) * int(data['count'])}"""
         await state.set_state('put_in_basket')
         await msg.answer(text=msg.text, reply_markup=await put_in_basket_reply_buttons(msg.from_user.id))
         await msg.answer_photo(photo=photo, caption=food_info, reply_markup=await put_in_basket_buttons())
