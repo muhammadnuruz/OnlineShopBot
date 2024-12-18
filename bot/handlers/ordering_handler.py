@@ -94,69 +94,68 @@ async def ordering_function_3(msg: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals=[basket, basket_ru]), state=['get_food', 'put_in_basket', 'ordering_state'])
 async def ordering_function_9(msg: types.Message, state: FSMContext):
     await state.finish()
-    try:
-        response = requests.get(f"http://127.0.0.1:8000/api/baskets/{msg.from_user.id}/")
-        basket_data = response.json()
+    # try:
+    response = requests.get(f"http://127.0.0.1:8000/api/baskets/{msg.from_user.id}/")
+    basket_data = response.json()
 
-        if basket_data["count"] == 0:
-            await state.set_state('ordering_state')
-            await msg.answer("Sizning savatchingiz bo'sh.", reply_markup=await shop_menu_buttons(msg.from_user.id))
-        else:
-            basket_items = basket_data["results"]
-            tg_user = json.loads(
-                requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
-            )
-            food_counter = Counter(item["food"] for item in basket_items)
+    if basket_data["count"] == 0:
+        await state.set_state('ordering_state')
+        await msg.answer("Sizning savatchingiz bo'sh.", reply_markup=await shop_menu_buttons(msg.from_user.id))
+    else:
+        basket_items = basket_data["results"]
+        tg_user = json.loads(
+            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content
+        )
+        food_counter = Counter(item["food"] for item in basket_items)
 
-            basket_text = (
-                "\U0001F6D2 Sizning savatchingiz:\n\n"
-                if tg_user["language"] == "uz"
-                else "\U0001F6D2 Ваша корзина:\n\n"
-            )
-            total_price = 0
+        basket_text = (
+            "\U0001F6D2 Sizning savatchingiz:\n\n"
+            if tg_user["language"] == "uz"
+            else "\U0001F6D2 Ваша корзина:\n\n"
+        )
+        total_price = 0
 
-            for food_id, quantity in food_counter.items():
-                food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{food_id}/").content)
-                food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
-                food_price = int(food_data["price"])
+        for food_id, quantity in food_counter.items():
+            food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{food_id}/").content)
+            food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
+            food_price = int(food_data["price"])
 
-                total_price += food_price * quantity
-                basket_text += f"{food_name} {food_price} so'm x {quantity} = {food_price * quantity} so'm\n"
+            total_price += food_price * quantity
+            basket_text += f"{food_name} {food_price} so'm x {quantity} = {food_price * quantity} so'm\n"
 
-            basket_text += (
-                f"\nJami: {total_price} so'm"
-                if tg_user["language"] == "uz"
-                else f"\nИтого: {total_price} сум"
-            )
+        basket_text += (
+            f"\nJami: {total_price} so'm"
+            if tg_user["language"] == "uz"
+            else f"\nИтого: {total_price} сум"
+        )
 
-            keyboard = types.InlineKeyboardMarkup(row_width=3)
-            for food_id, quantity in food_counter.items():
-                food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{food_id}/").content)
-                food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
-
-                keyboard.add(
-                    types.InlineKeyboardButton(f"➖", callback_data=f"decrease_{food_name}"),
-                    types.InlineKeyboardButton(f"{food_name}", callback_data=f"item_{food_name}"),
-                    types.InlineKeyboardButton(f"➕", callback_data=f"increase_{food_name}")
-                )
+        keyboard = types.InlineKeyboardMarkup(row_width=3)
+        for food_id, quantity in food_counter.items():
+            food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{food_id}/").content)
+            food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
 
             keyboard.add(
-                types.InlineKeyboardButton(
-                    "\U00002705 Buyurtmani tasdiqlash" if tg_user[
-                                                              "language"] == "uz" else "\U00002705 Подтвердить заказ",
-                    callback_data="confirm_order"
-                )
+                types.InlineKeyboardButton(f"➖", callback_data=f"decrease_{food_name}"),
+                types.InlineKeyboardButton(f"{food_name}", callback_data=f"item_{food_name}"),
+                types.InlineKeyboardButton(f"➕", callback_data=f"increase_{food_name}")
             )
-            await msg.answer(text=keyboard)
-            async with state.proxy() as data:
-                data['price'] = total_price
-            await state.set_state("basket_menu")
-            await msg.answer(text=msg.text, reply_markup=await to_back_button(msg.from_user.id))
-            await msg.answer(basket_text, reply_markup=keyboard)
-    except Exception as e:
-        await state.finish()
-        await bot.send_message(admins[0], text={e})
-        await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
+
+        keyboard.add(
+            types.InlineKeyboardButton(
+                "\U00002705 Buyurtmani tasdiqlash" if tg_user[
+                                                          "language"] == "uz" else "\U00002705 Подтвердить заказ",
+                callback_data="confirm_order"
+            )
+        )
+        async with state.proxy() as data:
+            data['price'] = total_price
+        await state.set_state("basket_menu")
+        await msg.answer(text=msg.text, reply_markup=await to_back_button(msg.from_user.id))
+        await msg.answer(basket_text, reply_markup=keyboard)
+    # except Exception as e:
+    #     await state.finish()
+    #     await bot.send_message(admins[0], text={e})
+    #     await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
 
 
 @dp.callback_query_handler(Text(startswith="decrease_"), state="basket_menu")
