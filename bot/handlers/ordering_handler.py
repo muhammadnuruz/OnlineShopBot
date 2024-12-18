@@ -153,7 +153,8 @@ async def ordering_function_9(msg: types.Message, state: FSMContext):
             await msg.answer(text=msg.text, reply_markup=await to_back_button(msg.from_user.id))
             await msg.answer(basket_text, reply_markup=keyboard)
     except Exception as e:
-        await bot.send_message(admins[0], text=e)
+        await state.finish()
+        await bot.send_message(admins[0], text=f"{e} {e.args}")
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
 
 
