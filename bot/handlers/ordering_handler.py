@@ -147,6 +147,7 @@ async def ordering_function_9(msg: types.Message, state: FSMContext):
                     callback_data="confirm_order"
                 )
             )
+            await msg.answer(text=keyboard)
             async with state.proxy() as data:
                 data['price'] = total_price
             await state.set_state("basket_menu")
@@ -154,7 +155,7 @@ async def ordering_function_9(msg: types.Message, state: FSMContext):
             await msg.answer(basket_text, reply_markup=keyboard)
     except Exception as e:
         await state.finish()
-        await bot.send_message(admins[0], text=f"{e} {e.args}")
+        await bot.send_message(admins[0], text={e})
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
 
 
