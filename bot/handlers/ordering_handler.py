@@ -1,10 +1,12 @@
-import json
 import shutil
 from collections import Counter
-from urllib.parse import quote
 
-from aiogram.types import LabeledPrice
-
+import hashlib
+import time
+import json
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import requests
 from aiogram import types
 from aiogram.dispatcher.filters import Text
@@ -303,61 +305,90 @@ async def ordering_function_11(call: types.CallbackQuery, state: FSMContext):
         await bot.send_message(admins[0], text=e)
 
 
+CLICK_MERCHANT_ID = "32623"
+CLICK_SERVICE_ID = "62347"
+CLICK_SECRET_KEY = "rwGUQHADeNABRuP"
+
+
 @dp.callback_query_handler(Text("confirm_order"), state="basket_menu")
 async def ordering_function_12(call: types.CallbackQuery, state: FSMContext):
     try:
         await call.message.delete()
-        tg_user = json.loads(
-            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{call.from_user.id}/").content
+        tg_user_response = requests.get(
+            url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{call.from_user.id}/"
         )
+
+        tg_user = tg_user_response.json()
+
         async with state.proxy() as data:
             price = data.get('price', 0)
-            if price <= 0:
-                await call.message.answer(text="Something went wrong!",
-                                          reply_markup=await main_menu_buttons(call.from_user.id))
+            if not price or price <= 0:
+                await state.finish()
+                await call.message.answer(
+                    text="Xatolik yuz berdi! Narx mavjud emas.",
+                    reply_markup=await main_menu_buttons(call.from_user.id)
+                )
                 return
+
+        order_id = f"{call.from_user.id}_{int(time.time())}"
+        amount = f"{price:.2f}"
+        sign_string = f"{CLICK_MERCHANT_ID}{order_id}{amount}{CLICK_SECRET_KEY}"
+        sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
+
+        click_url = (
+            f"https://my.click.uz/services/pay?service_id={CLICK_SERVICE_ID}&merchant_id={CLICK_MERCHANT_ID}&"
+            f"amount={amount}&transaction_param={order_id}&sign={sign}"
+        )
+
+        message = (
+            "To'lovni amalga oshirish uchun quyidagi tugmani bosing:"
+            if tg_user.get('language') == 'uz'
+            else "Для оплаты нажмите на кнопку ниже:"
+        )
+
+        keyboard = InlineKeyboardMarkup().add(
+            InlineKeyboardButton(text="To'lovni amalga oshirish", url=click_url)
+        )
+
+        await call.message.answer(text=message, reply_markup=keyboard)
         await state.set_state('confirm_payment')
-        if tg_user['language'] == 'uz':
-            p_label = "Buyurtma uchun to'lo'vni bu yerda amalga oshiring 👇"
-        else:
-            p_label = "Оплату заказа производите здесь 👇"
-        prices = [LabeledPrice(label=p_label, amount=price * 100)]
-        await bot.send_invoice(
-            chat_id=call.from_user.id,
-            title="To'xtaniyoz ota",
-            description=p_label,
-            payload="unique-payload",
-            provider_token="398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065",
-            currency="UZS",
-            prices=prices,
-            start_parameter="pay",
-            is_flexible=False
-        )
+
     except Exception as e:
-        await call.message.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(call.from_user.id))
-        await bot.send_message(admins[0], text=e)
-
-
-@dp.pre_checkout_query_handler(lambda query: True, state="*")
-async def pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery, state: FSMContext):
-    await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
-
-
-@dp.message_handler(content_types=ContentType.SUCCESSFUL_PAYMENT, state="*")
-async def successful_payment(message: types.Message, state: FSMContext):
-    try:
-        payment = message.successful_payment
-        total_amount = payment.total_amount / 100
-
-        tg_user = json.loads(
-            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{message.from_user.id}/").content
+        await call.message.answer(
+            text="Xatolik yuz berdi! Iltimos, keyinroq urinib ko'ring.",
+            reply_markup=await main_menu_buttons(call.from_user.id)
         )
+        await bot.send_message(admins[0], text=f"Order error: {e}")
 
-        if tg_user['language'] == 'uz':
-            await message.reply(f"To'lov muvaffaqiyatli amalga oshirildi! {total_amount} {payment.currency} to'landi.")
-        else:
-            await message.reply(f"Оплата прошла успешно! {total_amount} {payment.currency} оплачено.")
 
+@csrf_exempt
+def click_payment_callback(request):
+    if request.method == "POST":
+        try:
+            data = request.POST
+            click_trans_id = data.get("click_trans_id")
+            service_id = data.get("service_id")
+            merchant_trans_id = data.get("merchant_trans_id")
+            sign_string = f"{merchant_trans_id}{CLICK_SECRET_KEY}"
+            sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
+
+            if data.get("sign") != sign:
+                return JsonResponse({"error": -1, "error_note": "Invalid sign"})
+
+            return JsonResponse({"error": 0, "error_note": "Success"})
+
+        except Exception as e:
+            return JsonResponse({"error": -2, "error_note": f"Error: {e}"})
+    return JsonResponse({"error": -1, "error_note": "Invalid request"})
+
+
+@dp.message_handler(state="confirm_payment")
+async def payment_confirmed_handler(message: types.Message, state: FSMContext):
+    try:
+        tg_user_response = requests.get(
+            url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{message.from_user.id}/"
+        )
+        tg_user = tg_user_response.json()
         response = requests.get(f"http://127.0.0.1:8000/api/baskets/{message.from_user.id}/")
         basket_data = response.json()
         basket_items = basket_data.get("results", [])
@@ -366,16 +397,18 @@ async def successful_payment(message: types.Message, state: FSMContext):
 
         basket_text = (
             "\U0001F6D2 Sizning buyurtmalaringiz:\n\n"
-            if tg_user["language"] == "uz"
+            if tg_user.get("language") == "uz"
             else "\U0001F6D2 Ваши заказы:\n\n"
         )
 
         total_price = 0
         food_items = {}
+
         for food_id, quantity in food_counter.items():
-            food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{food_id}/").content)
-            food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
-            food_price = int(food_data["price"])
+            food_response = requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{food_id}/")
+            food_data = food_response.json()
+            food_name = food_data.get("name") if tg_user["language"] == "uz" else food_data.get("ru_name")
+            food_price = int(food_data.get("price", 0))
 
             if food_name not in food_items:
                 food_items[food_name] = {"price": food_price, "quantity": quantity}
@@ -387,33 +420,41 @@ async def successful_payment(message: types.Message, state: FSMContext):
 
         post_data = {
             "total_price": total_price,
-            "delivery_address": tg_user['location'],
-            "latitude": tg_user['latitude'],
-            "longitude": tg_user['longitude'],
+            "delivery_address": tg_user.get('location', 'No location'),
+            "latitude": tg_user.get('latitude'),
+            "longitude": tg_user.get('longitude'),
             "payment_confirmed": True,
-            "user": tg_user['id'],
-            "food_items": [{"food_name": name, "price": item['price'], "quantity": item['quantity']} for name, item in
-                           food_items.items()]
+            "user": tg_user.get('id'),
+            "food_items": [
+                {"food_name": name, "price": item['price'], "quantity": item['quantity']} for name, item in
+                food_items.items()
+            ]
         }
 
-        requests.post(url="http://127.0.0.1:8000/api/orders/create/", json=post_data)
+        order_response = requests.post(url="http://127.0.0.1:8000/api/orders/create/", json=post_data)
+        if order_response.status_code != 201:
+            raise ValueError("Failed to create order")
+
         requests.delete(f"http://127.0.0.1:8000/api/baskets/delete_all_baskets/{tg_user['id']}/")
+
         basket_text += (
-            f"\nJami: {total_price} so'm\nGeolokatsiya: {tg_user['location']}"
+            f"\nJami: {total_price} so'm\nGeolokatsiya: {tg_user.get('location', 'No location')}"
             if tg_user["language"] == "uz"
-            else f"\nИтого: {total_price} сум\nГеолокация: {tg_user['location']}"
+            else f"\nИтого: {total_price} сум\nГеолокация: {tg_user.get('location', 'No location')}"
         )
+
         await state.finish()
-        if tg_user['language']:
-            await message.reply(f"Buyurtmangiz qabul qilindi! {basket_text}",
-                                reply_markup=await main_menu_buttons(message.from_user.id))
-        else:
-            await message.reply(f"Ваш заказ принят! {basket_text}",
-                                reply_markup=await main_menu_buttons(message.from_user.id))
+        await message.reply(
+            f"Buyurtmangiz qabul qilindi! {basket_text}"
+            if tg_user["language"] == "uz"
+            else f"Ваш заказ принят! {basket_text}",
+            reply_markup=await main_menu_buttons(message.from_user.id)
+        )
+
     except Exception as e:
         await state.finish()
-        await message.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(message.from_user.id))
-        await bot.send_message(admins[0], text=e)
+        await message.answer(text="Xatolik yuz berdi!", reply_markup=await main_menu_buttons(message.from_user.id))
+        await bot.send_message(admins[0], text=f"Payment confirmation error: {e}")
 
 
 @dp.message_handler(state='ordering_state')
