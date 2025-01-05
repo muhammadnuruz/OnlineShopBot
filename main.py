@@ -3,7 +3,7 @@ import asyncio
 from aiogram import executor
 from bot.handlers import *
 
-admins = [1974800905]
+admins = [1974800905, 332120974]
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
