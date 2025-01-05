@@ -389,7 +389,7 @@ async def payment_confirmed_handler(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             pass
         args = message.get_args()
-        if data['i_time'] != args:
+        if str(data['i_time']) != args:
             await message.reply(text="Вы еще не заплатили ❌")
             return
         tg_user_response = requests.get(
