@@ -319,8 +319,10 @@ async def ordering_function_12(call: types.CallbackQuery, state: FSMContext):
         )
 
         tg_user = tg_user_response.json()
+        i_time = int(time.time())
 
         async with state.proxy() as data:
+            data['i_time'] = i_time
             price = data.get('price', 0)
             if not price or price <= 0:
                 await state.finish()
@@ -329,15 +331,14 @@ async def ordering_function_12(call: types.CallbackQuery, state: FSMContext):
                     reply_markup=await main_menu_buttons(call.from_user.id)
                 )
                 return
-
-        order_id = f"{call.from_user.id}_{int(time.time())}"
+        order_id = f"{call.from_user.id}_{i_time}"
         amount = f"{price:.2f}"
         sign_string = f"{CLICK_MERCHANT_ID}{order_id}{amount}{CLICK_SECRET_KEY}"
         sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
 
         click_url = (
             f"https://my.click.uz/services/pay?service_id={CLICK_SERVICE_ID}&merchant_id={CLICK_MERCHANT_ID}&"
-            f"amount={amount}&transaction_param={order_id}&sign={sign}"
+            f"amount={amount}&transaction_param={order_id}&sign={sign}&return_url=https://t.me/rozmartbot?start={i_time}"
         )
 
         message = (
@@ -385,6 +386,12 @@ def click_payment_callback(request):
 @dp.message_handler(state="confirm_payment")
 async def payment_confirmed_handler(message: types.Message, state: FSMContext):
     try:
+        async with state.proxy() as data:
+            pass
+        args = message.get_args()
+        if data['i_time'] != args:
+            await message.reply(text="Вы еще не заплатили ❌")
+            return
         tg_user_response = requests.get(
             url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{message.from_user.id}/"
         )
@@ -466,7 +473,6 @@ async def payment_confirmed_handler(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer(text="Xatolik yuz berdi!", reply_markup=await main_menu_buttons(message.from_user.id))
         await bot.send_message(admins[0], text=f"Payment confirmation error: {e}")
-
 
 
 @dp.message_handler(state='ordering_state')
