@@ -446,13 +446,13 @@ async def payment_confirmed_handler(message: types.Message, state: FSMContext):
         admin_text = (
             f"🛒 <b>Новый заказ</b>\n\n"
             f"👤 <b>Клиент:</b> {tg_user.get('full_name', 'No name')}\n"
-            f"📞 <b>Телефон:</b> {tg_user.get('phone', 'No phone')}\n"
+            f"📞 <b>Телефон:</b> {tg_user.get('phone_number', 'No phone')}\n"
             f"🏠 <b>Адрес доставки:</b> {tg_user.get('location', 'No location')}\n\n"
             f"📦 <b>Заказанные товары:</b>\n{basket_text}\n\n"
             f"💳 <b>Общая сумма:</b> {total_price} сум\n"
         )
         for admin_id in admins:
-            await bot.send_message(chat_id=admin_id, text=admin_text, parse_mode=ParseMode.HTML)
+            await bot.send_message(chat_id=admin_id, text=admin_text, parse_mode="HTML")
 
         await state.finish()
         await message.reply(
