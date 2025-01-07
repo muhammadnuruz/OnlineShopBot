@@ -81,7 +81,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         await bot.send_message(admins[0], text=e)
 
 
-@dp.message_handler(Text(equals=[to_back, to_back_ru]), state=['get_food', 'put_in_basket', 'basket_menu'])
+@dp.message_handler(Text(equals=[to_back, to_back_ru]), state=['get_food', 'put_in_basket', 'basket_menu', 'confirm_payment', 'confirm_order'])
 async def ordering_function_3(msg: types.Message, state: FSMContext):
     try:
         await state.finish()
