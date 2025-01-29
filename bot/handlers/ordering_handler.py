@@ -33,14 +33,6 @@ async def ordering_function_1(msg: types.Message, state: FSMContext):
                          reply_markup=await shop_menu_buttons(msg.from_user.id))
 
 
-#
-# async def ordering_function_1(msg: types.Message):
-#     if msg.text == ordering:
-#         await msg.answer("Iltimos, lokatsiyangizni yuboring.", reply_markup=await location_buttons(msg.text))
-#     else:
-#         await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons(msg.text))
-
-
 @dp.message_handler(commands='to_back', state="*")
 async def ordering_function_11(msg: types.Message, state: FSMContext):
     k = await msg.answer("Wait.....")
@@ -83,8 +75,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
 
         requests.patch(url=f"http://127.0.0.1:8000/api/telegram-users/update/{tg_user['id']}/", data=data)
         await state.set_state('ordering_state')
-        await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}",
-                         reply_markup=await shop_menu_buttons(msg.from_user.id))
+        await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}")
         tg_user_response = requests.get(
             url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/"
         )
