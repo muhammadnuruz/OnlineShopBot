@@ -50,11 +50,8 @@ async def advert_menu_buttons():
     return ReplyKeyboardMarkup(keyboard=design, resize_keyboard=True)
 
 
-async def location_buttons(msg: str):
-    if msg == ordering:
-        design = [[(KeyboardButton(send_location, request_location=True))], [back_main_menu]]
-    else:
-        design = [[(KeyboardButton(send_location_ru, request_location=True))], [back_main_menu_ru]]
+async def location_buttons():
+    design = [[(KeyboardButton(send_location_ru, request_location=True))], [back_main_menu_ru]]
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=design)
 
 

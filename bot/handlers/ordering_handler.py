@@ -24,11 +24,21 @@ from main import admins
 
 
 @dp.message_handler(Text(equals=[ordering, ordering_ru]))
-async def ordering_function_1(msg: types.Message):
+async def ordering_function_1(msg: types.Message, state: FSMContext):
+    await state.set_state('ordering_state')
     if msg.text == ordering:
-        await msg.answer("Iltimos, lokatsiyangizni yuboring.", reply_markup=await location_buttons(msg.text))
+        await msg.answer("Do'kon bo'limiga hush kelibsiz.", reply_markup=await shop_menu_buttons(msg.from_user.id))
     else:
-        await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons(msg.text))
+        await msg.answer("Добро пожаловать в раздел «Магазин».",
+                         reply_markup=await shop_menu_buttons(msg.from_user.id))
+
+
+#
+# async def ordering_function_1(msg: types.Message):
+#     if msg.text == ordering:
+#         await msg.answer("Iltimos, lokatsiyangizni yuboring.", reply_markup=await location_buttons(msg.text))
+#     else:
+#         await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons(msg.text))
 
 
 @dp.message_handler(commands='to_back', state="*")
@@ -47,7 +57,7 @@ async def ordering_function_11(msg: types.Message, state: FSMContext):
     await state.finish()
 
 
-@dp.message_handler(content_types=ContentType.LOCATION)
+@dp.message_handler(content_types=ContentType.LOCATION, state="basket_menu")
 async def ordering_function_2(msg: types.Message, state: FSMContext):
     try:
         location = msg.location
@@ -75,13 +85,53 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         await state.set_state('ordering_state')
         await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}",
                          reply_markup=await shop_menu_buttons(msg.from_user.id))
+        tg_user_response = requests.get(
+            url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/"
+        )
+
+        tg_user = tg_user_response.json()
+        i_time = int(time.time())
+
+        async with state.proxy() as data:
+            data['i_time'] = i_time
+            price = data.get('price', 0)
+            if not price or price <= 0:
+                await state.finish()
+                await msg.answer(
+                    text="Xatolik yuz berdi! Narx mavjud emas.",
+                    reply_markup=await main_menu_buttons(msg.from_user.id)
+                )
+                return
+        order_id = f"{msg.from_user.id}_{i_time}"
+        amount = f"{price:.2f}"
+        sign_string = f"{CLICK_MERCHANT_ID}{order_id}{amount}{CLICK_SECRET_KEY}"
+        sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
+
+        click_url = (
+            f"https://my.click.uz/services/pay?service_id={CLICK_SERVICE_ID}&merchant_id={CLICK_MERCHANT_ID}&"
+            f"amount={amount}&transaction_param={order_id}&sign={sign}&return_url=https://t.me/rozmartbot?start={i_time}"
+        )
+
+        message = (
+            "To'lovni amalga oshirish uchun quyidagi tugmani bosing:"
+            if tg_user.get('language') == 'uz'
+            else "Для оплаты нажмите на кнопку ниже:"
+        )
+
+        keyboard = InlineKeyboardMarkup().add(
+            InlineKeyboardButton(text="To'lovni amalga oshirish", url=click_url)
+        )
+
+        await msg.answer(text=message, reply_markup=keyboard)
+        await state.set_state('confirm_payment')
     except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
-        await bot.send_message(admins[0], text=e)
+        await bot.send_message(admins[0], text=f"Order error: {e}")
 
 
-@dp.message_handler(Text(equals=[to_back, to_back_ru]), state=['get_food', 'put_in_basket', 'basket_menu', 'confirm_payment', 'confirm_order'])
+@dp.message_handler(Text(equals=[to_back, to_back_ru]),
+                    state=['get_food', 'put_in_basket', 'basket_menu', 'confirm_payment', 'confirm_order'])
 async def ordering_function_3(msg: types.Message, state: FSMContext):
     try:
         await state.finish()
@@ -312,54 +362,8 @@ CLICK_SECRET_KEY = "rwGUQHADeNABRuP"
 
 @dp.callback_query_handler(Text("confirm_order"), state="basket_menu")
 async def ordering_function_12(call: types.CallbackQuery, state: FSMContext):
-    try:
-        await call.message.delete()
-        tg_user_response = requests.get(
-            url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{call.from_user.id}/"
-        )
-
-        tg_user = tg_user_response.json()
-        i_time = int(time.time())
-
-        async with state.proxy() as data:
-            data['i_time'] = i_time
-            price = data.get('price', 0)
-            if not price or price <= 0:
-                await state.finish()
-                await call.message.answer(
-                    text="Xatolik yuz berdi! Narx mavjud emas.",
-                    reply_markup=await main_menu_buttons(call.from_user.id)
-                )
-                return
-        order_id = f"{call.from_user.id}_{i_time}"
-        amount = f"{price:.2f}"
-        sign_string = f"{CLICK_MERCHANT_ID}{order_id}{amount}{CLICK_SECRET_KEY}"
-        sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
-
-        click_url = (
-            f"https://my.click.uz/services/pay?service_id={CLICK_SERVICE_ID}&merchant_id={CLICK_MERCHANT_ID}&"
-            f"amount={amount}&transaction_param={order_id}&sign={sign}&return_url=https://t.me/rozmartbot?start={i_time}"
-        )
-
-        message = (
-            "To'lovni amalga oshirish uchun quyidagi tugmani bosing:"
-            if tg_user.get('language') == 'uz'
-            else "Для оплаты нажмите на кнопку ниже:"
-        )
-
-        keyboard = InlineKeyboardMarkup().add(
-            InlineKeyboardButton(text="To'lovni amalga oshirish", url=click_url)
-        )
-
-        await call.message.answer(text=message, reply_markup=keyboard)
-        await state.set_state('confirm_payment')
-
-    except Exception as e:
-        await call.message.answer(
-            text="Xatolik yuz berdi! Iltimos, keyinroq urinib ko'ring.",
-            reply_markup=await main_menu_buttons(call.from_user.id)
-        )
-        await bot.send_message(admins[0], text=f"Order error: {e}")
+    await call.message.delete()
+    await call.message.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons())
 
 
 @csrf_exempt
@@ -390,7 +394,8 @@ async def payment_confirmed_handler(message: types.Message, state: FSMContext):
             pass
         args = message.get_args()
         if str(data['i_time']) != str(args):
-            await message.reply(text="Вы еще не заплатили ❌")
+            await message.reply(text="Вы еще не заплатили ❌",
+                                reply_markup=await to_back_button(chat_id=message.from_user.id))
             return
         tg_user_response = requests.get(
             url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{message.from_user.id}/"
