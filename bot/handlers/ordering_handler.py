@@ -354,6 +354,7 @@ CLICK_SECRET_KEY = "rwGUQHADeNABRuP"
 @dp.callback_query_handler(Text("confirm_order"), state="basket_menu")
 async def ordering_function_12(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
+    await call.message.answer(text="Заказ подтвержден ✔")
     await call.message.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons())
 
 

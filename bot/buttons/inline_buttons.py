@@ -2,9 +2,9 @@ import json
 import random
 
 import requests
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 
-from bot.buttons.text import uz_language, ru_language, back_main_menu_ru, back_main_menu
+from bot.buttons.text import uz_language, ru_language, back_main_menu_ru, back_main_menu, to_back, to_back_ru
 
 
 async def language_buttons():
@@ -34,7 +34,7 @@ async def put_in_basket_buttons(count: str = '1'):
             InlineKeyboardButton(text=count, callback_data="none"),
             InlineKeyboardButton(text="➕", callback_data="add_in_basket")
         ],
-        [InlineKeyboardButton(text="📥", callback_data='put_in_basket')]
+        [InlineKeyboardButton(text="Положит и Корзину 📥", callback_data='put_in_basket')]
     ]
     return InlineKeyboardMarkup(inline_keyboard=design)
 
