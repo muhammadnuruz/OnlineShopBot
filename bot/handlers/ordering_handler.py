@@ -75,7 +75,8 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
 
         requests.patch(url=f"http://127.0.0.1:8000/api/telegram-users/update/{tg_user['id']}/", data=data)
         await state.set_state('ordering_state')
-        await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}")
+        await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}",
+                         reply_markup=await to_back_button(msg.from_user.id))
         tg_user_response = requests.get(
             url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/"
         )
