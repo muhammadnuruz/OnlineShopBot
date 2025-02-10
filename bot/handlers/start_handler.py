@@ -1,4 +1,5 @@
 import json
+from token import AWAIT
 
 import requests
 from aiogram import types
@@ -27,7 +28,7 @@ async def back_main_menu_function_1(call: types.CallbackQuery, state: FSMContext
     await call.message.answer(text=call.data, reply_markup=await main_menu_buttons(call.from_user.id))
 
 
-@dp.message_handler(CommandStart())
+@dp.message_handler(CommandStart(), state="*")
 async def start_handler(msg: types.Message, state: FSMContext):
     tg_user = json.loads(
         requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content)
@@ -41,6 +42,7 @@ Tilni tanlang
 
 Выберите язык""", reply_markup=await language_buttons())
     except KeyError:
+        await state.finish()
         if tg_user.get('language') == 'uz':
             await msg.answer(text=f"Bot yangilandi ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
         else:
