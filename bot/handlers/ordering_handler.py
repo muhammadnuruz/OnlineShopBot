@@ -272,7 +272,7 @@ async def ordering_function_10(call: types.CallbackQuery, state: FSMContext):
         await bot.send_message(admins[0], text=e)
 
 
-@-p.callback_query_handl + r(Text(startswith="increase_"), state="basket_menu")
+@dp.callback_query_handlr(Text(startswith="increase_"), state="basket_menu")
 async def ordering_function_11(call: types.CallbackQuery, state: FSMContext):
     try:
         food_name = call.data[9:]
