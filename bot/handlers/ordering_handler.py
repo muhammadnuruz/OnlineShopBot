@@ -178,9 +178,9 @@ async def ordering_function_9(msg: types.Message, state: FSMContext):
                 food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
 
                 keyboard.add(
-                    types.InlineKeyboardButton(f"➖", callback_data=f"decrease_{food_name}"),
+                    types.InlineKeyboardButton(f"-", callback_data=f"decrease_{food_name}"),
                     types.InlineKeyboardButton(f"{food_name}", callback_data=f"item_{food_name}"),
-                    types.InlineKeyboardButton(f"➕", callback_data=f"increase_{food_name}")
+                    types.InlineKeyboardButton(f"+", callback_data=f"increase_{food_name}")
                 )
 
             keyboard.add(
@@ -249,9 +249,9 @@ async def ordering_function_10(call: types.CallbackQuery, state: FSMContext):
                 food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
 
                 keyboard.add(
-                    types.InlineKeyboardButton(f"➖", callback_data=f"decrease_{food_name}"),
+                    types.InlineKeyboardButton(f"-", callback_data=f"decrease_{food_name}"),
                     types.InlineKeyboardButton(f"{food_name}", callback_data=f"item_{food_name}"),
-                    types.InlineKeyboardButton(f"➕", callback_data=f"increase_{food_name}")
+                    types.InlineKeyboardButton(f"+", callback_data=f"increase_{food_name}")
                 )
 
             keyboard.add(
@@ -272,7 +272,7 @@ async def ordering_function_10(call: types.CallbackQuery, state: FSMContext):
         await bot.send_message(admins[0], text=e)
 
 
-@dp.callback_query_handler(Text(startswith="increase_"), state="basket_menu")
+@-p.callback_query_handl + r(Text(startswith="increase_"), state="basket_menu")
 async def ordering_function_11(call: types.CallbackQuery, state: FSMContext):
     try:
         food_name = call.data[9:]
@@ -324,9 +324,9 @@ async def ordering_function_11(call: types.CallbackQuery, state: FSMContext):
                 food_name = food_data["name"] if tg_user["language"] == "uz" else food_data["ru_name"]
 
                 keyboard.add(
-                    types.InlineKeyboardButton(f"➖", callback_data=f"decrease_{food_name}"),
+                    types.InlineKeyboardButton(f"-", callback_data=f"decrease_{food_name}"),
                     types.InlineKeyboardButton(f"{food_name}", callback_data=f"item_{food_name}"),
-                    types.InlineKeyboardButton(f"➕", callback_data=f"increase_{food_name}")
+                    types.InlineKeyboardButton(f"+", callback_data=f"increase_{food_name}")
                 )
 
             keyboard.add(
