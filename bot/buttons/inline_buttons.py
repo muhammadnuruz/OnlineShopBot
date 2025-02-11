@@ -30,9 +30,9 @@ async def category_button(lang: str):
 async def put_in_basket_buttons(count: str = '1'):
     design = [
         [
-            InlineKeyboardButton(text="➖", callback_data="delete_in_basket"),
+            InlineKeyboardButton(text="-", callback_data="delete_in_basket"),
             InlineKeyboardButton(text=count, callback_data="none"),
-            InlineKeyboardButton(text="➕", callback_data="add_in_basket")
+            InlineKeyboardButton(text="+", callback_data="add_in_basket")
         ],
         [InlineKeyboardButton(text="Положит и Корзину 📥", callback_data='put_in_basket')]
     ]
