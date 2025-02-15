@@ -34,7 +34,7 @@ async def put_in_basket_buttons(count: str = '1'):
             InlineKeyboardButton(text=count, callback_data="none"),
             InlineKeyboardButton(text="+", callback_data="add_in_basket")
         ],
-        [InlineKeyboardButton(text="Положит и Корзину 📥", callback_data='put_in_basket')]
+        [InlineKeyboardButton(text="Положить в корзину 📥", callback_data='put_in_basket')]
     ]
     return InlineKeyboardMarkup(inline_keyboard=design)
 
