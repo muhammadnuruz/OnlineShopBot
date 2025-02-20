@@ -75,7 +75,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
 
         requests.patch(url=f"http://127.0.0.1:8000/api/telegram-users/update/{tg_user['id']}/", data=data)
         await state.set_state('ordering_state')
-        await msg.answer(f"Sizning lokatsiyangiz yangilandi:\n{location_address}",
+        await msg.answer(f"Ваше местоположение обновлено.:\n{location_address}",
                          reply_markup=await to_back_button(msg.from_user.id))
         tg_user_response = requests.get(
             url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/"
@@ -111,7 +111,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         )
 
         keyboard = InlineKeyboardMarkup().add(
-            InlineKeyboardButton(text="To'lovni amalga oshirish", url=click_url)
+            InlineKeyboardButton(text="Сделать платеж", url=click_url)
         )
 
         await msg.answer(text=message, reply_markup=keyboard)
