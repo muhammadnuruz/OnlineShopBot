@@ -26,12 +26,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-# CSRF_TRUSTED_ORIGINS = [
-#     'https://arzonlab.uz',
-#     # Add other trusted origins here if needed
-# ]
-# CSRF_COOKIE_SECURE = True
-# CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_COOKIE_SECURE = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
