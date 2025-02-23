@@ -140,6 +140,7 @@ async def payment_confirmed_handler(message: types.Message, state: FSMContext):
 async def start_handler(msg: types.Message, state: FSMContext):
     args = msg.get_args()
     if args == 'confirm_payment':
+        await state.set_state("basket_menu")
         await msg.answer(text="Заказ подтвержден ✔")
         await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons())
     else:
