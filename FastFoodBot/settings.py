@@ -26,24 +26,26 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',  # Agar frontend React/Vue bo'lsa
-    'http://127.0.0.1:3000'
-]
-
-CSRF_COOKIE_SECURE = False  # Agar HTTPS bo'lsa, True qilib qo'ying
-CORS_ALLOW_ALL_ORIGINS = False  # Barcha domenlarga ruxsatni o‘chirib qo‘yamiz
-CORS_ALLOW_CREDENTIALS = True  # Cookie va autentifikatsiya uchun kerak
-
+# CORS konfiguratsiyasi
+CORS_ALLOW_ALL_ORIGINS = False  # Hammani qo‘ymaslik tavsiya qilinadi
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Agar frontend React yoki Vue bo'lsa
-    'http://127.0.0.1:3000',
+    "http://localhost:3000",  # React frontend
+    "http://127.0.0.1:3000",
+    "http://193.188.23.254:8000",  # Serveringiz
 ]
 
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://localhost(:[0-9]+)?$",
-    r"^http://127\.0\.0\.1(:[0-9]+)?$"
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["Content-Type", "Authorization", "X-CSRFToken"]
+
+# CSRF uchun ishonchli domenlar
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://193.188.23.254:8000"
 ]
+
+CSRF_COOKIE_SECURE = False  # Agar HTTPS bo'lsa, True qiling
+CORS_ALLOW_CREDENTIALS = False  # Cookie va autentifikatsiya uchun kerak
 
 # Application definition
 
@@ -74,6 +76,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'FastFoodBot.urls'
