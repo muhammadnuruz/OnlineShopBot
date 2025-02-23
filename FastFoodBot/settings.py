@@ -26,21 +26,24 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']  # Lokal serverlar uchun ruxsat
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',  # Agar frontend React/Vue bo'lsa
+    'http://127.0.0.1:3000'
+]
 
-CSRF_COOKIE_SECURE = False  # HTTP orqali ham cookie yuborishga ruxsat (faqat lokal muhitda)
-CORS_ALLOW_ALL_ORIGINS = False  # Barcha domenlarga ruxsat berish o‘rniga aniq domenlarni belgilash
-CORS_ALLOW_CREDENTIALS = True  # Cookie va autentifikatsiya ma'lumotlarini qo‘llab-quvvatlash
+CSRF_COOKIE_SECURE = False  # Agar HTTPS bo'lsa, True qilib qo'ying
+CORS_ALLOW_ALL_ORIGINS = False  # Barcha domenlarga ruxsatni o‘chirib qo‘yamiz
+CORS_ALLOW_CREDENTIALS = True  # Cookie va autentifikatsiya uchun kerak
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000'
-]  # Faqat localhost uchun ruxsat
+    'http://localhost:3000',  # Agar frontend React yoki Vue bo'lsa
+    'http://127.0.0.1:3000',
+]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost(:[0-9]+)?$",
     r"^http://127\.0\.0\.1(:[0-9]+)?$"
-]  # Localhost va har qanday port uchun mos keluvchi regex
+]
 
 # Application definition
 
