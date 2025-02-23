@@ -26,9 +26,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['*']
-CSRF_COOKIE_SECURE = True
-CORS_ALLOW_ALL_ORIGINS = True
+# CSRF_TRUSTED_ORIGINS = ['https://yourdomain.com', 'https://sub.yourdomain.com']  # Barcha domenlarga ruxsat bermang!
+CSRF_COOKIE_SECURE = True  # Faqat HTTPS orqali cookie yuborish
+CORS_ALLOW_ALL_ORIGINS = True  # Barcha domenlardan kelgan so‘rovlarga ruxsat
+CORS_ALLOW_CREDENTIALS = True  # Cookie va autentifikatsiya ma'lumotlarini qo‘llab-quvvatlash
+# CORS_ALLOWED_ORIGINS = [
+#     'https://yourdomain.com',
+#     'https://anotherdomain.com'
+# ]  # Faqat ruxsat berilgan domenlar
+# CORS_ALLOWED_ORIGIN_REGEXES = [
+#     r"^https://.*\.yourdomain\.com$"
+# ]  # Muayyan subdomenlarga ruxsat
+
 
 # Application definition
 
