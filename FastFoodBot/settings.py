@@ -42,9 +42,6 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://127\.0\.0\.1(:[0-9]+)?$"
 ]  # Localhost va har qanday port uchun mos keluvchi regex
 
-
-
-
 # Application definition
 
 INSTALLED_APPS = [
