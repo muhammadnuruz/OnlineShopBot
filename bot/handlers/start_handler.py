@@ -9,7 +9,8 @@ from aiogram.dispatcher.filters import CommandStart, Text
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from bot.buttons.inline_buttons import language_buttons
-from bot.buttons.reply_buttons import main_menu_buttons, back_main_menu_button, to_back_button, shop_menu_buttons
+from bot.buttons.reply_buttons import main_menu_buttons, back_main_menu_button, to_back_button, shop_menu_buttons, \
+    location_buttons
 from bot.buttons.text import back_main_menu, choice_language, choice_language_ru, back_main_menu_ru, change_phone, \
     change_phone_ru, to_back_ru, to_back
 from bot.dispatcher import dp, bot
@@ -137,23 +138,28 @@ async def payment_confirmed_handler(message: types.Message, state: FSMContext):
 
 @dp.message_handler(CommandStart(), state="*")
 async def start_handler(msg: types.Message, state: FSMContext):
-    tg_user = json.loads(
-        requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content)
-    try:
-        if tg_user['detail']:
-            await state.set_state('language_1')
-            await msg.answer(text="""
-Tilni tanlang
-
--------------
-
-Выберите язык""", reply_markup=await language_buttons())
-    except KeyError:
-        await state.finish()
-        if tg_user.get('language') == 'uz':
-            await msg.answer(text=f"Bot yangilandi ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
-        else:
-            await msg.answer(text=f"Бот обновлен ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
+    args = msg.get_args()
+    if args == 'confirm_payment':
+        await msg.answer(text="Заказ подтвержден ✔")
+        await msg.answer("Пожалуйста, пришлите свое местоположение.", reply_markup=await location_buttons())
+    else:
+        tg_user = json.loads(
+            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/").content)
+        try:
+            if tg_user['detail']:
+                await state.set_state('language_1')
+                await msg.answer(text="""
+    Tilni tanlang
+    
+    -------------
+    
+    Выберите язык""", reply_markup=await language_buttons())
+        except KeyError:
+            await state.finish()
+            if tg_user.get('language') == 'uz':
+                await msg.answer(text=f"Bot yangilandi ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
+            else:
+                await msg.answer(text=f"Бот обновлен ♻", reply_markup=await main_menu_buttons(msg.from_user.id))
 
 
 @dp.callback_query_handler(Text(startswith='language_'), state='language_1')
