@@ -26,17 +26,23 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-# CSRF_TRUSTED_ORIGINS = ['https://yourdomain.com', 'https://sub.yourdomain.com']  # Barcha domenlarga ruxsat bermang!
-CSRF_COOKIE_SECURE = False  # HTTP orqali ham cookie yuborishga ruxsat # Faqat HTTPS orqali cookie yuborish
-CORS_ALLOW_ALL_ORIGINS = True  # Barcha domenlardan kelgan so‘rovlarga ruxsat
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']  # Lokal serverlar uchun ruxsat
+
+CSRF_COOKIE_SECURE = False  # HTTP orqali ham cookie yuborishga ruxsat (faqat lokal muhitda)
+CORS_ALLOW_ALL_ORIGINS = False  # Barcha domenlarga ruxsat berish o‘rniga aniq domenlarni belgilash
 CORS_ALLOW_CREDENTIALS = True  # Cookie va autentifikatsiya ma'lumotlarini qo‘llab-quvvatlash
-# CORS_ALLOWED_ORIGINS = [
-#     'https://yourdomain.com',
-#     'https://anotherdomain.com'
-# ]  # Faqat ruxsat berilgan domenlar
-# CORS_ALLOWED_ORIGIN_REGEXES = [
-#     r"^https://.*\.yourdomain\.com$"
-# ]  # Muayyan subdomenlarga ruxsat
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+]  # Faqat localhost uchun ruxsat
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost(:[0-9]+)?$",
+    r"^http://127\.0\.0\.1(:[0-9]+)?$"
+]  # Localhost va har qanday port uchun mos keluvchi regex
+
+
 
 
 # Application definition
