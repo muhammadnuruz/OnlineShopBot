@@ -122,19 +122,6 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         await bot.send_message(admins[0], text=f"Order error: {e}")
 
 
-@dp.message_handler(Text(equals=[to_back, to_back_ru]),
-                    state=['get_food', 'put_in_basket', 'basket_menu', 'confirm_payment', 'confirm_order'])
-async def ordering_function_3(msg: types.Message, state: FSMContext):
-    try:
-        await state.finish()
-        await state.set_state('ordering_state')
-        await msg.answer(text=msg.text, reply_markup=await shop_menu_buttons(msg.from_user.id))
-    except Exception as e:
-        await state.finish()
-        await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
-        await bot.send_message(admins[0], text=e)
-
-
 @dp.message_handler(Text(equals=[basket, basket_ru]), state=['get_food', 'put_in_basket', 'ordering_state'])
 async def ordering_function_9(msg: types.Message, state: FSMContext):
     try:

@@ -9,9 +9,9 @@ from aiogram.dispatcher.filters import CommandStart, Text
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from bot.buttons.inline_buttons import language_buttons
-from bot.buttons.reply_buttons import main_menu_buttons, back_main_menu_button, to_back_button
+from bot.buttons.reply_buttons import main_menu_buttons, back_main_menu_button, to_back_button, shop_menu_buttons
 from bot.buttons.text import back_main_menu, choice_language, choice_language_ru, back_main_menu_ru, change_phone, \
-    change_phone_ru
+    change_phone_ru, to_back_ru, to_back
 from bot.dispatcher import dp, bot
 from main import admins
 
@@ -27,6 +27,19 @@ async def back_main_menu_function_1(call: types.CallbackQuery, state: FSMContext
     await state.finish()
     await call.message.delete()
     await call.message.answer(text=call.data, reply_markup=await main_menu_buttons(call.from_user.id))
+
+
+@dp.message_handler(Text(equals=[to_back, to_back_ru]),
+                    state=['get_food', 'put_in_basket', 'basket_menu', 'confirm_payment', 'confirm_order'])
+async def ordering_function_3(msg: types.Message, state: FSMContext):
+    try:
+        await state.finish()
+        await state.set_state('ordering_state')
+        await msg.answer(text=msg.text, reply_markup=await shop_menu_buttons(msg.from_user.id))
+    except Exception as e:
+        await state.finish()
+        await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
+        await bot.send_message(admins[0], text=e)
 
 
 @dp.message_handler(state="confirm_payment")
