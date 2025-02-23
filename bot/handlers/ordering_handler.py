@@ -68,11 +68,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
 
         geolocator = Nominatim(user_agent="my_bot")
         location_name = geolocator.reverse((latitude, longitude))
-
-        if location_name:
-            location_address = location_name.address
-        else:
-            location_address = "Lokatsiya nomi aniqlanmadi."
+        location_address = location_name.address if location_name else "Lokatsiya nomi aniqlanmadi."
 
         tg_user = json.loads(
             requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.chat.id}/").content)
@@ -87,25 +83,41 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         await state.set_state('ordering_state')
         await msg.answer(f"Ваше местоположение обновлено.:\n{location_address}",
                          reply_markup=await to_back_button(msg.from_user.id))
-        tg_user_response = requests.get(
-            url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.from_user.id}/"
-        )
 
-        tg_user = tg_user_response.json()
+        basket_response = requests.get(f"http://127.0.0.1:8000/api/baskets/{msg.from_user.id}/")
+        basket_data = basket_response.json()
+
+        if basket_data["count"] == 0:
+            await state.finish()
+            await msg.answer(
+                text="Savatingiz bo'sh!",
+                reply_markup=await main_menu_buttons(msg.from_user.id)
+            )
+            return
+
+        basket_items = basket_data["results"]
+        total_price = 0
+
+        for item in basket_items:
+            food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{item['food']}/").content)
+            total_price += int(food_data["price"]) * item["quantity"]
+
         i_time = int(time.time())
 
         async with state.proxy() as data:
             data['i_time'] = i_time
-            price = data.get('price', 0)
-            if not price or price <= 0:
-                await state.finish()
-                await msg.answer(
-                    text="Xatolik yuz berdi! Narx mavjud emas.",
-                    reply_markup=await main_menu_buttons(msg.from_user.id)
-                )
-                return
+            data['price'] = total_price
+
+        if total_price <= 0:
+            await state.finish()
+            await msg.answer(
+                text="Xatolik yuz berdi! Narx mavjud emas.",
+                reply_markup=await main_menu_buttons(msg.from_user.id)
+            )
+            return
+
         order_id = f"{msg.from_user.id}_{i_time}"
-        amount = f"{price:.2f}"
+        amount = f"{total_price:.2f}"
         sign_string = f"{CLICK_MERCHANT_ID}{order_id}{amount}{CLICK_SECRET_KEY}"
         sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
 
