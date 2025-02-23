@@ -62,45 +62,68 @@ async def ordering_function_11(msg: types.Message, state: FSMContext):
 @dp.message_handler(content_types=ContentType.LOCATION, state="basket_menu")
 async def ordering_function_2(msg: types.Message, state: FSMContext):
     try:
-        location = msg.location
-        latitude = location.latitude
-        longitude = location.longitude
+        if not msg.location:
+            await msg.answer("Lokatsiya yuborilmadi! Iltimos, joylashuvingizni ulashing.")
+            return
+
+        latitude, longitude = msg.location.latitude, msg.location.longitude
 
         geolocator = Nominatim(user_agent="my_bot")
-        location_name = geolocator.reverse((latitude, longitude))
+        location_name = geolocator.reverse((latitude, longitude), exactly_one=True)
         location_address = location_name.address if location_name else "Lokatsiya nomi aniqlanmadi."
 
-        tg_user = json.loads(
-            requests.get(url=f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.chat.id}/").content)
+        user_url = f"http://127.0.0.1:8000/api/telegram-users/chat_id/{msg.chat.id}/"
+        response = requests.get(user_url)
 
-        data = {
+        if response.status_code != 200:
+            await msg.answer("Foydalanuvchi ma’lumoti olinmadi! Keyinroq urinib ko‘ring.")
+            return
+
+        tg_user = response.json()
+
+        update_url = f"http://127.0.0.1:8000/api/telegram-users/update/{tg_user['id']}/"
+        update_data = {
             "latitude": latitude,
             "longitude": longitude,
             "location": location_address
         }
+        requests.patch(update_url, json=update_data)
 
-        requests.patch(url=f"http://127.0.0.1:8000/api/telegram-users/update/{tg_user['id']}/", data=data)
         await state.set_state('ordering_state')
-        await msg.answer(f"Ваше местоположение обновлено.:\n{location_address}",
+        await msg.answer(f"📍 Sizning lokatsiyangiz yangilandi:\n{location_address}",
                          reply_markup=await to_back_button(msg.from_user.id))
 
-        basket_response = requests.get(f"http://127.0.0.1:8000/api/baskets/{msg.from_user.id}/")
+        basket_url = f"http://127.0.0.1:8000/api/baskets/{msg.from_user.id}/"
+        basket_response = requests.get(basket_url)
+
+        if basket_response.status_code != 200:
+            await msg.answer("Savat ma'lumotlari olinmadi! Keyinroq urinib ko‘ring.")
+            return
+
         basket_data = basket_response.json()
 
         if basket_data["count"] == 0:
             await state.finish()
-            await msg.answer(
-                text="Savatingiz bo'sh!",
-                reply_markup=await main_menu_buttons(msg.from_user.id)
-            )
+            await msg.answer("Savatingiz bo‘sh!", reply_markup=await main_menu_buttons(msg.from_user.id))
             return
 
         basket_items = basket_data["results"]
         total_price = 0
 
-        for item in basket_items:
-            food_data = json.loads(requests.get(url=f"http://127.0.0.1:8000/api/foods/id/{item['food']}/").content)
-            total_price += int(food_data["price"]) * item["quantity"]
+        unique_foods = set(item["food"] for item in basket_items)  # Unikal mahsulot ID-larini olish
+
+        for food_id in unique_foods:
+            food_response = requests.get(f"http://127.0.0.1:8000/api/foods/id/{food_id}/")
+
+            if food_response.status_code != 200:
+                await msg.answer(f"Mahsulot ma'lumotlari olinmadi! (ID: {food_id})")
+                continue
+
+            food_data = food_response.json()
+            food_price = int(food_data["price"])
+            food_count = sum(1 for item in basket_items if item["food"] == food_id)  # Mahsulot sonini hisoblash
+
+            total_price += food_price * food_count
 
         i_time = int(time.time())
 
@@ -127,7 +150,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
         )
 
         message = (
-            "To'lovni amalga oshirish uchun quyidagi tugmani bosing:"
+            "To‘lovni amalga oshirish uchun quyidagi tugmani bosing:"
             if tg_user.get('language') == 'uz'
             else "Для оплаты нажмите на кнопку ниже:"
         )
@@ -138,6 +161,7 @@ async def ordering_function_2(msg: types.Message, state: FSMContext):
 
         await msg.answer(text=message, reply_markup=keyboard)
         await state.set_state('confirm_payment')
+
     except Exception as e:
         await state.finish()
         await msg.answer(text="Something went wrong!", reply_markup=await main_menu_buttons(msg.from_user.id))
