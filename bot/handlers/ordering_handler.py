@@ -38,7 +38,7 @@ async def ordering_function_1(msg: types.Message, state: FSMContext):
                          reply_markup=await shop_menu_buttons(msg.from_user.id))
         keyboard = InlineKeyboardMarkup().add(
             InlineKeyboardButton("ОФОРМИТЬ ЗАКАЗ 🔘",
-                                 web_app=WebAppInfo(url="https://rozmetov-mini-app.vercel.app"))
+                                 web_app=WebAppInfo(url="https://rozmartdelivery.uz"))
         )
         await msg.answer("Заказать через мини-приложение 👇", reply_markup=keyboard)
 
