@@ -28,19 +28,9 @@ async def ordering_function_1(msg: types.Message, state: FSMContext):
     await state.set_state('ordering_state')
     if msg.text == ordering:
         await msg.answer("Do'kon bo'limiga hush kelibsiz.", reply_markup=await shop_menu_buttons(msg.from_user.id))
-        keyboard = InlineKeyboardMarkup().add(
-            InlineKeyboardButton("BUYURTMA BERISH 🔘",
-                                 web_app=WebAppInfo(url="https://rozmetov-mini-app.vercel.app"))
-        )
-        await msg.answer("Mini App dan buyurtma berish 👇", reply_markup=keyboard)
     else:
         await msg.answer("Добро пожаловать в раздел «Магазин».",
                          reply_markup=await shop_menu_buttons(msg.from_user.id))
-        keyboard = InlineKeyboardMarkup().add(
-            InlineKeyboardButton("ОФОРМИТЬ ЗАКАЗ 🔘",
-                                 web_app=WebAppInfo(url="https://rozmartdelivery.uz"))
-        )
-        await msg.answer("Заказать через мини-приложение 👇", reply_markup=keyboard)
 
 
 @dp.message_handler(commands='to_back', state="*")
