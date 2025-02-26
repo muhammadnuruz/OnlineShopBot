@@ -33,7 +33,6 @@ async def ordering_function_1(msg: types.Message, state: FSMContext):
                          reply_markup=await shop_menu_buttons(msg.from_user.id))
 
 
-
 @dp.message_handler(commands='to_back', state="*")
 async def ordering_function_11(msg: types.Message, state: FSMContext):
     k = await msg.answer("Wait.....")
